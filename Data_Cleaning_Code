@@ -1,0 +1,9 @@
+import pandas as pd
+
+## Read and merge data
+
+movie_clean = pd.read_csv("movie_mvlens_clean.csv")
+movie_5000 = pd.read_csv("tmdb_5000_movies.csv")
+rating = pd.read_csv("ratings.csv")
+new = pd.merge(left=movie_clean, right=movie_5000, on='title', how='inner')
+new_with_rating = pd.merge(left = new,right = rating, on = 'movieId',how = 'inner')
