@@ -1,4 +1,4 @@
-#ML data cleaning
+#cleaning raw data
 
 library(data.table)
 library(dplyr)
@@ -14,6 +14,5 @@ movie_mvlens1 <- movie_mvlens %>%
   mutate(title = sub(", The", "", title))
 
 fwrite(movie_mvlens1, file = "./ml-latest-small/movie_mvlens_clean.csv")
-  #mutate(year= str_extract(title, pattern = "(.)$"))
 
 
