@@ -19,11 +19,11 @@ import pandas as pd
 withsplitdata = pd.read_csv("withSplitDic.csv" ,index_col = 0)
 
 #add a column to count the number of movies each user rated
-withsplitdata['Count']= withsplitdata.groupby(['userId'])['userId'].transform('count')
-num_movies_rated = withsplitdata[withsplitdata['Count'] < 150].index
+withsplitdata['Count_movies']= withsplitdata.groupby(['userId'])['userId'].transform('count')
+num_movies_rated = withsplitdata[withsplitdata['Count_movies'] < 150].index
 
 #order by descending number of movies rated
-sort_withsplitdata = withsplitdata.sort_values(by = ['Count', 'userId'], ascending = False)
+sort_withsplitdata = withsplitdata.sort_values(by = ['Count_movies', 'userId'], ascending = False)
 sort_withsplitdata.to_csv("userId_150_v2.csv")
 
 
