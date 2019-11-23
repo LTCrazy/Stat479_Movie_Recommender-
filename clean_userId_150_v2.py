@@ -24,7 +24,5 @@ num_movies_rated = withsplitdata[withsplitdata['Count_movies'] < 150].index
 
 #order by descending number of movies rated
 sort_withsplitdata = withsplitdata.sort_values(by = ['Count_movies', 'userId'], ascending = False)
-sort_withsplitdata.to_csv("userId_150_v2.csv")
-
-
+sort_withsplitdata.to_csv("userId_150_v3.csv")
  
