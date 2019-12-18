@@ -1,9 +1,130 @@
 import pandas as pd
+import json
 
-## Read and merge data
+movies = pd.read_csv("./Data/tmdb-movie-metadata/tmdb_5000_movies.csv")
+credits = pd.read_csv("./Data/tmdb-movie-metadata/tmdb_5000_credits.csv")
+movie_clean = pd.read_csv("./Data/movie_mvlens_clean.csv")
+rating = pd.read_csv("./Data/ratings.csv")
 
-movie_clean = pd.read_csv("movie_mvlens_clean.csv")
-movie_5000 = pd.read_csv("tmdb_5000_movies.csv")
-rating = pd.read_csv("ratings.csv")
-new = pd.merge(left=movie_clean, right=movie_5000, on='title', how='inner')
+credits.rename(columns = {"movie_id": "id"}, inplace = True) 
+credits.drop(columns = "title", inplace = True)
+
+## Read JSON columns
+json_columns = ['genres','keywords', 'production_countries','production_companies', 'spoken_languages']
+
+for column in json_columns:
+    movies[column] = movies[column].apply(json.loads)
+
+## Merge 3 data sets
+movie5000 = pd.merge(left=movies, right=credits, on='id', how='inner')
+new = pd.merge(left=movie_clean, right=movie5000, on='title', how='inner')
 new_with_rating = pd.merge(left = new,right = rating, on = 'movieId',how = 'inner')
+
+## Split strings into sets of words
+for i in range(len(new_with_rating['genres_x'])):
+    new_with_rating['genres_x'][i] = new_with_rating['genres_x'][i].split('|')
+
+new_with_rating.drop(["homepage","tagline","timestamp","original_title","crew","genres_y","keywords","cast","id"], axis = 1, inplace = True)
+
+# Convert release-date to year-from-now
+from datetime import datetime
+now = datetime.now() # current date and time
+year = now.strftime("%Y")
+new_with_rating['release_date'].astype(str)
+new_with_rating['release_date'] = int(year) - new_with_rating['release_date'].str[0:4].astype(int)
+new_with_rating.rename(columns={'release_date':'year_from_now'},inplace = True)
+
+# Convert 'original_language' & 'status' to factors (numeric)
+new_with_rating['original_language'] = new_with_rating['original_language'].astype('category')
+new_with_rating['status'] = new_with_rating['status'].astype('category')
+cat_columns = new_with_rating.select_dtypes(['category']).columns
+new_with_rating[cat_columns] = new_with_rating[cat_columns].apply(lambda x: x.cat.codes)
+
+#add a column to count the number of movies each user rated
+new_with_rating['Count_movies']= new_with_rating.groupby(['userId'])['userId'].transform('count')
+num_movies_rated = new_with_rating[new_with_rating['Count_movies'] < 150].index
+
+#order by descending number of movies rated
+sort_withsplitdata = new_with_rating.sort_values(by = ['Count_movies', 'userId'], ascending = False)
+sort_withsplitdata = sort_withsplitdata[sort_withsplitdata['Count_movies'] > 150]
+user150 = sort_withsplitdata
+
+# Convert 'production_countries', 'production_companies','spoken_languages' to list
+for i in range(0,user150.shape[0]):
+    if len(user150['production_countries'].iloc[i])!=0:
+        user150['production_countries'].iloc[i] = list(pd.DataFrame.from_dict(user150['production_countries'].iloc[i]).iloc[:,0])
+    if len(user150['production_companies'].iloc[i])!=0:
+        user150['production_companies'].iloc[i] = list(pd.DataFrame.from_dict(user150['production_companies'].iloc[i]).iloc[:,0])
+    if len(user150['spoken_languages'].iloc[i])!=0:
+        user150['spoken_languages'].iloc[i] = list(pd.DataFrame.from_dict(user150['spoken_languages'].iloc[i]).iloc[:,0])
+ 
+ 
+ # Convert genres to dummy variables
+# dummy_split = pd.read_csv('./Data/topUserSplitDummies.csv')
+dummy_split = user150
+
+def check_existance(test_list, check_elem): 
+    for i in test_list: 
+        if i == check_elem:
+            return True
+    else:
+        return False
+    
+    
+for i in range(len(dummy_split['genres_x'])):
+   dummy_split['genres_x'][i] = eval(str(dummy_split['genres_x'].iloc[i]))
+
+all_types = []
+for elem in dummy_split['genres_x']:
+    for i in range(len(elem)):
+        if elem[i] not in all_types:
+            all_types.append(elem[i])            
+        
+for elem in all_types:
+     dummy_split[str(elem)] = 0
+
+for i in range(len(dummy_split['genres_x'])):
+    for elem in all_types:
+        if check_existance(dummy_split['genres_x'].iloc[i], elem) == True:
+            dummy_split[str(elem)][i] = int(True)
+
+# Convert production_countries to dummy variables
+for i in range(len(dummy_split['production_countries'])):
+   dummy_split['production_countries'][i] = eval(str(dummy_split['production_countries'].iloc[i]))
+
+all_types_countries = []
+for elem in dummy_split['production_countries']:
+    for i in range(len(elem)):
+        if elem[i] not in all_types_countries:
+            all_types_countries.append(elem[i])
+
+for elem in all_types_countries:
+     dummy_split[str(elem)] = 0
+
+for i in range(len(dummy_split['production_countries'])):
+    for elem in all_types_countries:
+        if check_existance(dummy_split['production_countries'].iloc[i], elem) == True:
+            dummy_split[str(elem)][i] = int(True)
+
+# Convert production_companies to dummy variables
+for i in range(len(dummy_split['production_companies'])):
+   dummy_split['production_companies'][i] = eval(str(dummy_split['production_companies'].iloc[i]))
+
+all_types_companies = []
+for elem in dummy_split['production_companies']:
+    for i in range(len(elem)):
+        if elem[i] not in all_types_companies:
+            all_types_companies.append(elem[i])
+
+for elem in all_types_companies:
+     dummy_split[str(elem)] = 0
+
+for i in range(len(dummy_split['production_companies'])):
+    for elem in all_types_companies:
+        if check_existance(dummy_split['production_companies'].iloc[i], elem) == True:
+            dummy_split[str(elem)][i] = int(True)
+
+dummy_split.drop(['production_countries','genres_x','production_companies','overview','movieId','title','spoken_languages'], axis = 1, inplace = True)
+## Write file
+dummy_split.to_csv(path_or_buf="./Data/topUserSplitCompanies.csv")
+topUser = dummy_split
