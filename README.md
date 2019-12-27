@@ -6,12 +6,9 @@ This is a machine learning project for movie recommendation system with limited 
 
 # File direction:
 
-"Final_report.pdf" is our summary of this project.
+* "Final_report.pdf" is our summary of this project.
+* "Movie_Recommendation_FinalCode.ipynb" is the script of our programming in jupyter notebook.
+* "Data_Cleaning_Code" includes the script of our data cleaning steps.
+* "top150SplitCompanies.csv.zip" is the dataset we used after cleaning.
 
-"Movie_Recommendation_FinalCode.ipynb" is the script of our programming in jupyter notebook.
-
-"Data_Cleaning_Code" includes the script of our data cleaning steps.
-
-"top150SplitCompanies.csv.zip" is the dataset we used after cleaning.
-
-* Data visualization can be found under "data-visualization" branch
+Data visualization can be found under "data-visualization" branch
