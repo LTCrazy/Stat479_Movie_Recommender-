@@ -14,4 +14,4 @@ This is a machine learning project for movie recommendation system with limited 
 
 "top150SplitCompanies.csv.zip" is the dataset we used after cleaning.
 
-# Data visualization can be found under "data-visualization" branch
+*Data visualization can be found under "data-visualization" branch
