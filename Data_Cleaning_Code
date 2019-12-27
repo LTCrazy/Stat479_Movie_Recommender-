@@ -1,3 +1,12 @@
+"""
+Date: 12/19/2019
+Author: Tianchang Li
+To clean, merge our movie datasets and remove users who rated less or equal to 150 movies.
+Categorical variables and list/dictionary format variables are converted to useable format.
+Output: a file with one row per user per movie rating.
+This dataset only contains users who has rated more than 200 movies in our raw dataset.
+It is ordered by number of rated movies of each user descendingly
+"""
 import pandas as pd
 import json
 
